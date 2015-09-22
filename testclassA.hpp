@@ -14,6 +14,8 @@ using namespace std;
 #define luaL_checkint(L, n) ((int)luaL_checkinteger(L, (n)))
 
 typedef int (*ClassAMethods)(lua_State * L, ClassA*);
+static void ClassActor0(lua_State * L);
+static void ClassActor1n(lua_State * L);
 static int sayhi(lua_State * L);
 static int sayhi0(lua_State * L, ClassA * ca);
 static int sayhi1n(lua_State * L, ClassA * ca);
@@ -36,6 +38,10 @@ void GenClassAMTable(lua_State * L)
 	lua_pop(L, 1);
 	lua_newtable(L);
 
+	lua_pushlightuserdata(L, (void*)&ClassActor0);
+	lua_setfield(L, -2, "ClassActor0");
+	lua_pushlightuserdata(L, (void*)&ClassActor1n);
+	lua_setfield(L, -2, "ClassActor1n");
 	lua_pushlightuserdata(L, (void*)&sayhi0);
 	lua_setfield(L, -2, "sayhi0");
 	lua_pushlightuserdata(L, (void*)&sayhi1n);
@@ -45,6 +51,19 @@ void GenClassAMTable(lua_State * L)
 
 	lua_setglobal(L, "ClassAmtable");
 } 
+
+static void ClassActor0(lua_State * L)
+{
+	ClassA * p = new ClassA();
+	lua_pushlightuserdata(L, (void*)p);
+}
+
+static void ClassActor1n(lua_State * L)
+{
+	int a = (int)luaL_checkinteger(L, 1);
+	ClassA * p = new ClassA(a);
+	lua_pushlightuserdata(L, (void*)p);
+}
 
 static int sayhi0(lua_State * L, ClassA * ca)
 {
