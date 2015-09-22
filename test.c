@@ -56,7 +56,7 @@ static int ClassActor(lua_State * L)
 	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	func(L);
-	lua_setfield(L, -2, "class");
+	lua_setfield(L, -2, "rawptr");
 	return 1;
 }
 
