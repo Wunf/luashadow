@@ -117,7 +117,7 @@ static int sayhi(lua_State * L)
 	}
 	
 	luaL_checktype(L, 1, LUA_TTABLE);
-	lua_getfield(L, -n, "class");
+	lua_getfield(L, -n, "rawptr");
 	if(!lua_islightuserdata(L, -1))
 	{
 		lua_pushstring(L, "missing pointer");
