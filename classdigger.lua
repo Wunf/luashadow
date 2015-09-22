@@ -1,3 +1,14 @@
+local GetParas = function(parastring)
+	local para = {}
+	for p in string.gmatch(parastring, "([^,]+)") do
+		local eq = string.find(p, "=")
+		if eq then p = string.sub(p, 1, eq - 1) end
+		local pp = string.match(p, "%s*(.+)%s[^%s]+")
+		table.insert(para, pp)
+	end
+	return para
+end
+
 local MakeClass = function(lines, index)
 	local line = lines[index]
 
@@ -24,6 +35,7 @@ local MakeClass = function(lines, index)
 
 	-- all the public methods
 	local interface = {}
+	local ctor = {}
 	local public = false 
 	local annotation = false
 	while line and not string.match(line, "%s*};%s*") do
@@ -36,27 +48,32 @@ local MakeClass = function(lines, index)
 				public = false
 			end
 			if public then
-				local retv, iname, paras = string.match(line, "([^%s]+)%s+([%w_]+)%s*%((.-)%)")
-				if retv then
-					local itf = {}
-					itf.retv = retv
-					local para = {}
-					for p in string.gmatch(paras, "([^,]+)") do
-						local eq = string.find(p, "=")
-						if eq then p = string.sub(p, 1, eq - 1) end
-						local pp = string.match(p, "%s*(.+)%s[^%s]+")
-						table.insert(para, pp)
+				local ctorpara = string.match(line, name .. "%((.-)%)")
+				if ctorpara then
+					local para = GetParas(ctorpara)
+					table.insert(ctor, para)
+				else
+					local retv, iname, paras = string.match(line, "([^%s]+)%s+([%w_]+)%s*%((.-)%)")
+					if retv then
+						local itf = {}
+						itf.retv = retv
+						local para = GetParas(paras)
+						if next(para) then
+							itf.para = para
+						end
+						interface[iname] = itf
 					end
-					if next(para) then
-						itf.para = para
-					end
-					interface[iname] = itf
 				end
 			end
 		end
 		if string.find(line, "%*/") then annotation = false end
 		index = index + 1
 		line = lines[index]
+	end
+	if next(ctor) then
+		class.constructor = ctor
+	else
+		class.constructor = {{}}
 	end
 	if next(interface) then
 		class.interface = interface
