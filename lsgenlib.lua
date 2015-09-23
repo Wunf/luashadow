@@ -78,6 +78,9 @@ using namespace std;
 
 ]]
 	for name, _ in pairs(classtbl) do
+		file = file .. string.format("typedef void (*%sCtor)(lua_State * L);\n\n", name)
+	end
+	for name, _ in pairs(classtbl) do
 		file = file .. GenLuaCCtor(name)
 	end
 	file = file .. 

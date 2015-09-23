@@ -1,4 +1,4 @@
-local test = require("test")
+local test = require("luashadow")
 
 local objA1 = test.ClassA(1)
 local objA2 = test.ClassA()
