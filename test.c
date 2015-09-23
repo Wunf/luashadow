@@ -1,8 +1,10 @@
 #include "testclassA.hpp"
-#include <stdlib.h>
 #include <lua.hpp>
 #include <lualib.h>
 #include <lauxlib.h>
+#include <string>
+
+using namespace std;
 
 typedef void (*ClassACtor)(lua_State * L);
 

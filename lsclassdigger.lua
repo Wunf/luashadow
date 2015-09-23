@@ -1,3 +1,5 @@
+local cd = {}
+
 local GetParas = function(parastring)
 	local para = {}
 	for p in string.gmatch(parastring, "([^,]+)") do
@@ -9,7 +11,36 @@ local GetParas = function(parastring)
 	return para
 end
 
-local MakeClass = function(lines, index)
+local FindCtor = function(ctor, line, name)
+	local ctorpara = string.match(line, name .. "%((.-)%)")
+	if ctorpara then
+		local para = GetParas(ctorpara)
+		table.insert(ctor, para)
+		return true
+	end
+	return false
+end
+
+local FindPubMd = function(interface, line)
+	local retv, iname, paras = string.match(line, "([^%s]+)%s+([%w_]+)%s*%((.-)%)")
+	if retv then
+		local itf = {}
+		itf.retv = retv
+		local para = GetParas(paras)
+		if next(para) then
+			itf.para = para
+		end
+		if interface[iname] then
+			table.insert(interface[iname], itf)
+		else
+			interface[iname] = {itf}
+		end
+		return true
+	end
+	return false
+end
+
+cd.MakeClass = function(lines, index)
 	local line = lines[index]
 
 	-- class name and base class names
@@ -48,24 +79,12 @@ local MakeClass = function(lines, index)
 				public = false
 			end
 			if public then
-				local ctorpara = string.match(line, name .. "%((.-)%)")
-				if ctorpara then
-					local para = GetParas(ctorpara)
-					table.insert(ctor, para)
-				else
-					local retv, iname, paras = string.match(line, "([^%s]+)%s+([%w_]+)%s*%((.-)%)")
-					if retv then
-						local itf = {}
-						itf.retv = retv
-						local para = GetParas(paras)
-						if next(para) then
-							itf.para = para
-						end
-						if interface[iname] then
-							table.insert(interface[iname], itf)
-						else
-							interface[iname] = {itf}
-						end
+				-- find constructors
+				if not FindCtor(ctor, line, name) then
+					-- find public methods
+					if not FindPubMd(interface, line) then
+						-- to do 
+						-- find operators
 					end
 				end
 			end
@@ -74,6 +93,7 @@ local MakeClass = function(lines, index)
 		index = index + 1
 		line = lines[index]
 	end
+
 	if next(ctor) then
 		class.constructor = ctor
 	end
@@ -83,7 +103,7 @@ local MakeClass = function(lines, index)
 	return name, class
 end
 
-local ClassDigger = function(file)
+cd.ClassDigger = function(file)
 	if not file then return nil end
 	local f = io.open(file, "r")
 	local lines = {}
@@ -95,7 +115,7 @@ local ClassDigger = function(file)
 	for index, line in ipairs(lines) do
 		if string.find(line, "/%*") then annotation = true end
 		if not annotation and not string.match(line, "^%s*//") and line:match("%s*class%s+") then
-			local name, class = MakeClass(lines, index)
+			local name, class = cd.MakeClass(lines, index)
 			if name then
 				classtable[name] = class
 			end
@@ -105,18 +125,4 @@ local ClassDigger = function(file)
 	return classtable
 end
 
-DumpTable = function(t, l)
-	l = l or 0
-	for k, v in pairs(t) do
-		for i = 1, l do k = "\t" .. k end
-		print(k, v)
-		if type(v) == "table" then
-			DumpTable(v, l + 1)
-		end
-	end
-end
-
-local classtable = ClassDigger(arg[1])
-if next(classtable) then
-	DumpTable(classtable, 0)
-end
+return cd
