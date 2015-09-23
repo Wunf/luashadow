@@ -76,8 +76,6 @@ local MakeClass = function(lines, index)
 	end
 	if next(ctor) then
 		class.constructor = ctor
-	else
-		class.constructor = {{}}
 	end
 	if next(interface) then
 		class.interface = interface
