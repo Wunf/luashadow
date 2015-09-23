@@ -61,7 +61,11 @@ local MakeClass = function(lines, index)
 						if next(para) then
 							itf.para = para
 						end
-						interface[iname] = itf
+						if interface[iname] then
+							table.insert(interface[iname], itf)
+						else
+							interface[iname] = {itf}
+						end
 					end
 				end
 			end
